@@ -236,7 +236,7 @@ int main() {
  
  do{ 
     mainwindow();
-    gotoxy((termC/2)-10,(termR/2)-5);
+    gotoxy((termC/2)-13,(termR/2)-5);
     outputcolor(F_BLACK,B_WHITE);
     printf("Interactive Bash History (%d)\n", count);
     ch = listBox(listBox1, 22, (termR/2)-4, &scrollData, B_CYAN, F_BLACK, B_BLACK,
