@@ -93,6 +93,5 @@ Last modified: 14/04/2019 Rename Headers
 /*====================================================================*/
 
 int     read_keytrail(char chartrail[5]);
-int     read_accent(char *ch, char accentchar[2]);
 
 #endif
