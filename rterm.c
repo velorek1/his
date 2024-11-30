@@ -289,4 +289,20 @@ void draw_window(int x1, int y1, int x2, int y2, int backcolor, int bordercolor,
       write_ch(i, y1, ' ', titlecolor, titlecolor);
   }
 }
+void draw_transparent(int x1, int y1, int x2, int y2) {
+/*
+   Draw a box on screen
+ */
+  int     i, j;
+  i = x1;
+  j = y1;
+  //shadow
+  resetAnsi(0);
+ //window
+  for(j = y1; j <= y2+1; j++)
+    for(i = x1; i <= x2+1; i++){
+      gotoxy(i,j);
+      printf("%c", FILL_CHAR);
+    }
+}
 

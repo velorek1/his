@@ -115,4 +115,5 @@ void    init_term();
 void    close_term();
 void write_ch(int x, int y, wchar_t ch, char backcolor, char forecolor);
 void draw_window(int x1, int y1, int x2, int y2, int backcolor, int bordercolor, int titlecolor, BOOL  border, BOOL title, BOOL shadow);
+void draw_transparent(int x1, int y1, int x2, int y2);
 #endif

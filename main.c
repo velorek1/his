@@ -169,7 +169,7 @@ int options(){
         gotoxy(whereX,whereY);
         outputcolor(F_WHITE,B_YELLOW);
         printf("                \n");
- 	if (whereX == termC-20-17) xDIR = -1;
+ 	if (whereX == termC-20-16) xDIR = -1;
         if (whereX == 22) xDIR = 1;
         if (whereY == (termR/2)+3)  {yDIR = 1;}
         if (whereY == (termR/2)+6) {yDIR = -1;}
@@ -252,7 +252,7 @@ int main() {
 } while (scrollData.lastch != K_ESCAPE);   
     showcursor();   
    ch++;
-  draw_window(20, (termR/2) - 6, termC-20, (termR/2) +6, B_BLACK,F_BLACK, B_BLACK,1,1,0);
+   draw_transparent(20, (termR/2) - 6, termC-20, (termR/2) +6);
    gotoxy(globalCursorX, globalCursorY-2);
     close_term();
     
