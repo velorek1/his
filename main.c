@@ -145,8 +145,8 @@ int options(){
   outputcolor(F_BLACK,B_YELLOW);
   printf("- SPACE: Show options.\n");
   gotoxy(22,(termR/2)+1);
-  outputcolor(F_BLACK,B_YELLOW);
-  printf("If terminal resizes, screen is cleared\n");
+  outputcolor(FH_BLACK,B_YELLOW);
+  printf(":: his v0.1 - 2024 ::\n");
   for(i=22; i<=termC-20;i++){
     gotoxy(i,(termR/2)+2);
     outputcolor(F_BLACK,B_YELLOW);
@@ -213,6 +213,11 @@ int main() {
     SCROLLDATA scrollData;
    get_pos(&globalCursorY, &globalCursorX);
    get_terminal_dimensions (&termR,&termC);
+   //check screen size
+   if ((termR < 15) || (termC<70)){
+         fprintf(stderr, "Screen is too small to display.\n");
+        return EXIT_FAILURE;
+   }
    ntermR = termR;
    ntermC = termC;
    init_term();
