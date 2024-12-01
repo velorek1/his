@@ -1,3 +1,19 @@
 # his
-TUI bash history for Linux in C (CLI)
+TUI **His**tory Program
+A terminal-based User Interface (TUI) application written in C to enhance interaction with your command history. This program is designed for efficiency and usability in a terminal environment.
+
++ Features
+- Scrollable Listbox.
+- Cursor Restoration.
+- List Inversion.
+- Search and Filter.
+
+TO INSTALL:  
+
+    * Download or clone repository (git clone https://github.com/velorek1/his.git)
+    * Type "cd his", "make" and "./his" to execute.
+    
+License
+This project is licensed under the MIT License.
+
 ![Alt text](screencap.png?raw=true "Demo")
