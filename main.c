@@ -150,7 +150,7 @@ int options(){
   printf("- [x]: Invert list.\n");
   gotoxy(22,(termR/2)+1);
   outputcolor(F_BLACK,B_YELLOW);
-  printf("- [f]: Add filter.\n");
+  printf("- [f/r]: Add/remove filter.\n");
    gotoxy(22,(termR/2)+2);
   outputcolor(FH_BLACK,B_YELLOW);
   printf(":: his v0.1 - 2024 ::\n");
