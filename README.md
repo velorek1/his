@@ -1,8 +1,8 @@
 # his
 TUI **His**tory Program
-A terminal-based User Interface (TUI) application written in C to enhance interaction with your command history. This program is designed for efficiency and usability in a terminal environment.
+A terminal-based User Interface (TUI) application written in C to enhance interaction with your command history. 
 
-+ Features
+Features:
 - Scrollable Listbox.
 - Cursor Restoration.
 - List Inversion.
