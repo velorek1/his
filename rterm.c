@@ -18,6 +18,7 @@ LAST MODIFIED : 29/11/2024 get_cursor_pos added / draw_window added
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include <fcntl.h>
 #include <locale.h>
 #include <sys/ioctl.h>
@@ -236,14 +237,6 @@ void close_term(){
   printf("\n");
 }
 
-void write_ch(int x, int y, wchar_t ch, char backcolor, char forecolor) {
-//Write Unicode char to screen raw
-   resetAnsi(0);
-   gotoxy(x+1, y+1);
-   outputcolor(forecolor, backcolor);
-   printf("%lc", ch);  //unicode
-}
-
 void draw_window(int x1, int y1, int x2, int y2, int backcolor, int bordercolor, int titlecolor, BOOL  border, BOOL title, BOOL shadow) {
 /*
    Draw a box on screen
@@ -306,3 +299,149 @@ void draw_transparent(int x1, int y1, int x2, int y2) {
     }
 }
 
+void write_ch(int x, int y, wchar_t ch, char backcolor, char forecolor) {
+//Write Unicode char to screen raw
+   resetAnsi(0);
+   gotoxy(x+1, y+1);
+   outputcolor(forecolor, backcolor);
+   printf("%lc", ch);  //unicode
+}
+
+
+void write_str(int x, int y, char *str, char backcolor, char forecolor) {
+  //Writes a string of characters to buffer.
+  char   *astr=NULL;
+  size_t     i=0;
+  int wherex=0;
+
+    resetAnsi(0);
+    wherex = x;
+    astr = str;
+    for(i = 0; i <= strlen(str) - 1; i++) {
+      write_ch(wherex, y, astr[i], backcolor, forecolor);
+      wherex = wherex + 1;
+    }
+}
+
+/*-----------------------------------------------*/
+/* Writes an integer value as a string on screen */
+/*-----------------------------------------------*/
+
+int write_num(int x, int y, int num, char backcolor,
+	       char forecolor) {
+  char   astr[30];
+  char len=0;
+
+    sprintf(astr, "%d", num);
+    write_str(x, y, astr, backcolor, forecolor);
+    len = strlen(astr);
+  return len;
+}
+/*----------------------------*/
+/* User Interface - Text Box. */
+/*----------------------------*/
+int textbox(int wherex, int wherey, int displayLength,
+        char *label, char text[MAX_TEXT], int backcolor,
+        int labelcolor, int textcolor, BOOL locked) {
+  int     charCount = 0;
+  int     exitFlag = 0;
+  int     cursorON = 1;
+  int     i;
+  int     limitCursor = 0;
+  int     positionx = 0;
+  int     posCursor = 0;
+  int     keypressed = 0;
+  char    chartrail[5];
+ // char    accentchar[2];
+  char    displayChar;
+  char    ch;
+  resetAnsi(0); 
+  positionx = wherex + strlen(label);
+  limitCursor = wherex+strlen(label)+displayLength+1;
+  write_str(wherex, wherey, label, backcolor, labelcolor);
+  write_ch(positionx, wherey, '[', backcolor, textcolor);
+  for(i = positionx + 1; i <= positionx + displayLength; i++) {
+    write_ch(i, wherey, '.', backcolor, textcolor);
+  }
+  write_ch(positionx + displayLength + 1, wherey, ']', backcolor,
+       textcolor);
+  //Reset keyboard
+//  if(kbhit(1) == 1) ch = readch();
+  ch = 0;
+
+  do {
+	 if (locked == 0) break;
+      keypressed = kbhit(3);
+    //Cursor Animation
+   if (keypressed == 0){
+    
+      switch (cursorON) {
+    case 1:
+      posCursor = positionx + 1;
+          displayChar = '.';
+          if (posCursor == limitCursor) {
+            posCursor = posCursor - 1;
+            displayChar = ch;
+          }
+          write_ch(posCursor, wherey, displayChar, backcolor, textcolor);
+          cursorON = 0;
+      break;
+    case 0:
+          posCursor = positionx + 1;
+          if (posCursor == limitCursor) posCursor = posCursor - 1;
+          write_ch(posCursor, wherey, '|', backcolor, textcolor);
+          //update_screen(aux);
+          cursorON = 1;
+      break;
+      }
+     }
+    
+    //Process keys
+    if(keypressed == 1) {
+      ch = readch();
+      keypressed = 0;
+      //Read special keys
+      if (ch==K_ESCAPE) {
+               read_keytrail(chartrail);
+      }
+
+     if(charCount < displayLength) {
+     if(ch > 31 && ch < 127) {
+      write_ch(positionx + 1, wherey, ch, backcolor, textcolor);
+      text[charCount] = ch;
+      positionx++;
+      charCount++;
+    }
+      }
+    }
+    if (ch==K_CTRL_C){
+	    return 0;
+    }
+    if (ch==K_BACKSPACE){
+      if (positionx>0 && charCount>0){
+       ch=0;
+       positionx--;
+       charCount--;
+       text[charCount] = '\0';
+       write_ch(positionx + 1, wherey, '.', backcolor, textcolor);
+       if (positionx < limitCursor-2) write_ch(positionx + 2, wherey, '.', backcolor, textcolor);
+      }
+    }
+    if(ch == K_ENTER || ch == K_TAB || ch == K_ESCAPE)
+      exitFlag = 1;
+
+    //ENTER OR TAB FINISH LOOP
+  } while(exitFlag != 1);
+  text[charCount] = '\0';
+  //Clear field
+  positionx = wherex + strlen(label);
+  for(i = positionx + 1; i <= positionx + displayLength; i++) {
+    write_ch(i, wherey, '.', backcolor, textcolor);
+  }
+  write_ch(positionx + displayLength + 1, wherey, ']', backcolor,
+       textcolor);
+ 
+  //resetch();
+  if (ch == K_ESCAPE) charCount = 0;
+  return charCount;
+}

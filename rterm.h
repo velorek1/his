@@ -86,6 +86,7 @@ LAST MODIFIED : 29/11/2024 get_cursor_pos added / draw_window added
 #define LOWER_RIGHT_CORNER 9496
 #define UNICODEBAR1 0x2592
 #define FILL_CHAR 0x20
+#define MAX_TEXT 255 
 
 //#define K_UP_ARROW 'A'      // K_ESCAPE + 'A' -> UP_ARROW
 //#define K_DOWN_ARROW 'B'    // K_ESCAPE + 'B' -> DOWN_ARROW
@@ -115,5 +116,9 @@ void    init_term();
 void    close_term();
 void write_ch(int x, int y, wchar_t ch, char backcolor, char forecolor);
 void draw_window(int x1, int y1, int x2, int y2, int backcolor, int bordercolor, int titlecolor, BOOL  border, BOOL title, BOOL shadow);
-void draw_transparent(int x1, int y1, int x2, int y2);
+void draw_transparent(int x1, int y1, int x2, int );
+void write_ch(int x, int y, wchar_t ch, char backcolor, char forecolor);
+void write_str(int x, int y, char *str, char backcolor, char forecolor);
+int write_num(int x, int y, int num, char backcolor, char forecolor); 
+int textbox(int wherex, int wherey, int displayLength,char *label, char text[MAX_TEXT], int backcolor, int labelcolor, int textcolor, BOOL locked);
 #endif

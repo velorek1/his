@@ -13,9 +13,13 @@
 #include <sys/ioctl.h>
 #define HISTORY_FILE "~/.bash_history"
 
+//GLOBALS
 int globalCursorX=0, globalCursorY=0;
 int termR=0, termC=0;
 int ntermR=0, ntermC=0;
+int count=0;
+int filterCount=0;
+SCROLLDATA scrollData;
 
 char *strdup(const char *s) {
     char *copy = malloc(strlen(s) + 1);
@@ -134,21 +138,24 @@ int options(){
   printf("[+] KEYS:\n");
   gotoxy(22,(termR/2)-3);
   outputcolor(F_BLACK,B_YELLOW);
-  printf("- ENTER: Run command.\n");
+  printf("- [ENTER]: Run command.\n");
   gotoxy(22,(termR/2)-2);
   outputcolor(F_BLACK,B_YELLOW);
-  printf("- TAB: Type command.\n");
+  printf("- [TAB]: Type command.\n");
   gotoxy(22,(termR/2)-1);
   outputcolor(F_BLACK,B_YELLOW);
-  printf("- ESC: Exit\n");
- gotoxy(22,(termR/2));
+  printf("- [ESC]: Exit.\n");
+  gotoxy(22,(termR/2));
   outputcolor(F_BLACK,B_YELLOW);
-  printf("- SPACE: Show options.\n");
+  printf("- [x]: Invert list.\n");
   gotoxy(22,(termR/2)+1);
+  outputcolor(F_BLACK,B_YELLOW);
+  printf("- [f]: Add filter.\n");
+   gotoxy(22,(termR/2)+2);
   outputcolor(FH_BLACK,B_YELLOW);
   printf(":: his v0.1 - 2024 ::\n");
   for(i=22; i<=termC-20;i++){
-    gotoxy(i,(termR/2)+2);
+    gotoxy(i,(termR/2)+3);
     outputcolor(F_BLACK,B_YELLOW);
     printf("%lc", HOR_LINE);
   }
@@ -159,7 +166,7 @@ int options(){
      whereX = 22;
      xDIR = 1;
      yDIR = 1;
-     whereY = (termR/2)+3;
+     whereY = (termR/2)+4;
   do{
 	 keypressed= kbhit(100);
 	 //wait for keypress
@@ -171,7 +178,7 @@ int options(){
         printf("                \n");
  	if (whereX == termC-20-16) xDIR = -1;
         if (whereX == 22) xDIR = 1;
-        if (whereY == (termR/2)+3)  {yDIR = 1;}
+        if (whereY == (termR/2)+4)  {yDIR = 1;}
         if (whereY == (termR/2)+6) {yDIR = -1;}
         whereX = whereX + xDIR;
         whereY = whereY + yDIR;
@@ -202,15 +209,51 @@ void mainwindow(){
   printf("^v: SCROLL | SPACE : INFO");
 
 }
+void load_history(int ascending, const char *instrstr) {
+    // Load list in ascending or descending order
+    int i = 0;
+    char **history = read_bash_history(&count);
+    filterCount =0;
+    if (!history) {
+        close_term();
+        showcursor();
+        fprintf(stderr, "Failed to read Bash history\n");
+        exit(0);
+    }
+
+    // Iterate through history entries based on the order
+    if (ascending == 1) {
+        for (i = 0; i < count; i++) {
+            // Check if the entry contains the substring (if filtering is enabled)
+            if (instrstr == NULL || instrstr[0] == '\0' || strstr(history[i], instrstr)) {
+                listBox1 = addatend(listBox1, newitem(history[i], -1, -1, -1, -1));
+            }
+	    if (strstr(history[i], instrstr)) filterCount++;
+            free(history[i]); // Free individual strings
+        }
+    } else {
+        for (i = count - 1; i >= 0; i--) {
+            if (instrstr == NULL || instrstr[0] == '\0' || strstr(history[i], instrstr)) {
+                listBox1 = addatend(listBox1, newitem(history[i], -1, -1, -1, -1));
+            }
+	    if (strstr(history[i], instrstr)) filterCount++;
+            free(history[i]); // Free individual strings
+        }
+    }
+   free(history); // Free the array
+   if (filterCount == 0) listBox1 = addatend(listBox1, newitem("Empty list", -1,-1,-1,-1));
+}
+
+void search(char csearch[MAX_TEXT]){
+       textbox(21, (termR/2)+7-1, 20,"Filter:", csearch, B_BLACK, F_WHITE, F_WHITE, 1);
+}
 
 int main() {
-    int count=0;
-    int i = 0;
     size_t k = 0;
-    char **history = read_bash_history(&count);
     char ch=0;
     char command[500];
-    SCROLLDATA scrollData;
+    int invert = 0;
+   char csearch[MAX_TEXT];
    get_pos(&globalCursorY, &globalCursorX);
    get_terminal_dimensions (&termR,&termC);
    //check screen size
@@ -223,39 +266,34 @@ int main() {
    init_term();
    hidecursor();   
 
-  if (!history) {
-        fprintf(stderr, "Failed to read Bash history\n");
-        return EXIT_FAILURE;
-    }
-
     resetScrollData(&scrollData);
     setselectorLimit(termC-41);
-    // Example: Print history to verify contents
-    for (i = 0; i < count; i++) {
-        //printf("%d: %s\n", i + 1, history[i]);
-        listBox1 = addatend(listBox1, newitem(history[i],-1,-1,-1,-1));
-        free(history[i]); // Free individual strings
-    }
-    free(history); // Free the array
- 
- 
+ csearch[0] = '\0';
  do{ 
+    load_history(invert,csearch);
     mainwindow();
     gotoxy((termC/2)-13,(termR/2)-5);
     outputcolor(F_BLACK,B_WHITE);
+ 
     printf("Interactive Bash History (%d)\n", count);
+ 
     ch = listBox(listBox1, 22, (termR/2)-4, &scrollData, B_CYAN, F_BLACK, B_BLACK,
 	       FH_WHITE, 11, VERTICAL, 1,1);
    if (ch == K_ENTER) break;
    if (ch == K_TAB) break;
+   if (ch == 'x') {if (invert == 1) invert = 0; else invert = 1;}
+   if (ch == 'f') {search(csearch); if (strlen(csearch)==0 || filterCount==0) csearch[0]='\0';}
+   if (ch == 'r') {csearch[0]='\0';}
+
    if (ch == K_SPACE) {
 	   ch = 0; 
 	  if (options() == -1 ) {scrollData.screenChanged = 1; scrollData.itemIndex = -1; break;}
+  
    }
-   
+   if (listBox1!= NULL) removeList(&listBox1);  
  
 } while (scrollData.lastch != K_ESCAPE);   
-    showcursor();   
+   showcursor();   
    ch++;
    draw_transparent(20, (termR/2) - 6, termC-20, (termR/2) +6);
    gotoxy(globalCursorX, globalCursorY-2);
@@ -275,6 +313,5 @@ int main() {
      printf("\r"); //avoids echo
     }
    }
-   removeList(&listBox1);
     return EXIT_SUCCESS;
 }
